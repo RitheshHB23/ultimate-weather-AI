@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Weather AI - 4 Day Forecast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d4ff;
+            --secondary: #0099cc;
+            --dark: #0a1628;
+            --darker: #051015;
+            --light: #f0f9ff;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4444;
+            --border: #1a4d66;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .location-display {
+            font-size: 1.2em;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        /* LOADING & ERROR */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.5em;
+            color: var(--primary);
+        }
+
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background-color: rgba(255, 68, 68, 0.2);
+            border: 2px solid var(--danger);
+            color: #ff9999;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .success-msg {
+            background-color: rgba(0, 255, 136, 0.2);
+            border: 2px solid var(--success);
+            color: var(--success);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* FORECAST GRID */
+        .forecast-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .forecast-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 153, 204, 0.15));
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .forecast-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+            border-color: var(--success);
+        }
+
+        .forecast-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .forecast-card:hover::before {
+            opacity: 1;
+            animation: shimmer 0.6s ease;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .day-header {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .date-small {
+            font-size: 0.85em;
+            color: var(--secondary);
+            margin-top: 5px;
+        }
+
+        .weather-icon {
+            text-align: center;
+            font-size: 4em;
+            margin: 15px 0;
+        }
+
+        .condition {
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--primary);
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .temps {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .temp {
+            text-align: center;
+        }
+
+        .temp-label {
+            font-size: 0.85em;
+            color: var(--secondary);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .temp-value {
+            font-size: 1.5em;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* RAIN PREDICTION */
+        .rain-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .rain-label {
+            font-size: 0.9em;
+            color: var(--secondary);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .rain-probability {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .rain-bar {
+            flex: 1;
+            height: 24px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .rain-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danger), var(--warning), var(--success));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-weight: bold;
+            font-size: 0.75em;
+            color: var(--dark);
+            transition: width 0.5s ease;
+        }
+
+        .rain-percentage {
+            font-weight: bold;
+            color: var(--primary);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .rain-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .rain-indicator.high {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff9999;
+        }
+
+        .rain-indicator.low {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success);
+        }
+
+        .rain-indicator.medium {
+            background: rgba(255, 170, 0, 0.2);
+            color: #ffcc00;
+        }
+
+        .rain-icon {
+            font-size: 1.5em;
+        }
+
+        .rain-text {
+            flex: 1;
+            font-weight: 600;
+        }
+
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat {
+            background: rgba(0, 153, 204, 0.15);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: var(--secondary);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* BUTTON */
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .forecast-container {
+                grid-template-columns: 1fr;
+            }
+
+            .weather-icon {
+                font-size: 3em;
+            }
+
+            .temps {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .forecast-card {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .forecast-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .forecast-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .forecast-card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        /* WEATHER ICON MAPPING */
+        .icon-01d { background: '☀️'; } /* Sunny */
+        .icon-01n { background: '🌙'; } /* Clear Night */
+        .icon-02d { background: '⛅'; } /* Partly Cloudy Day */
+        .icon-02n { background: '☁️'; } /* Partly Cloudy Night */
+        .icon-03d, .icon-03n { background: '☁️'; } /* Cloudy */
+        .icon-04d, .icon-04n { background: '☁️'; } /* Overcast */
+        .icon-09d, .icon-09n { background: '🌧️'; } /* Rain */
+        .icon-10d, .icon-10n { background: '🌦️'; } /* Rain with Sun */
+        .icon-11d, .icon-11n { background: '⛈️'; } /* Thunderstorm */
+        .icon-13d, .icon-13n { background: '❄️'; } /* Snow */
+        .icon-50d, .icon-50n { background: '🌫️'; } /* Mist */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>Ultimate Weather AI</h1>
+            <p>4-Day Forecast with Rain Prediction</p>
+            <div class="location-display" id="locationDisplay">
+                [LOC] Detecting location...
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div id="mainContent">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading weather forecast...</p>
+            </div>
+        </div>
+
+        <!-- REFRESH BUTTON -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="loadForecast()">[*] REFRESH FORECAST</button>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // WEATHER ICON MAPPING
+        // ═══════════════════════════════════════════════════════════════
+        const WEATHER_ICONS = {
+            '01d': '☀️', // Sunny
+            '01n': '🌙', // Clear Night
+            '02d': '⛅', // Partly Cloudy Day
+            '02n': '☁️', // Partly Cloudy Night
+            '03d': '☁️', // Cloudy
+            '03n': '☁️', // Cloudy
+            '04d': '☁️', // Overcast
+            '04n': '☁️', // Overcast
+            '09d': '🌧️', // Rain
+            '09n': '🌧️', // Rain
+            '10d': '🌦️', // Rain with Sun
+            '10n': '🌦️', // Rain with Sun
+            '11d': '⛈️', // Thunderstorm
+            '11n': '⛈️', // Thunderstorm
+            '13d': '❄️', // Snow
+            '13n': '❄️', // Snow
+            '50d': '🌫️', // Mist
+            '50n': '🌫️'  // Mist
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // API ENDPOINTS
+        // ═══════════════════════════════════════════════════════════════
+        const API_URL = 'http://localhost:5000/api';
+
+        async function loadForecast(lat = null, lng = null) {
+            try {
+                let url = `${API_URL}/forecast`;
+                if (lat && lng) {
+                    url += `?lat=${lat}&lng=${lng}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayForecast(data.location, data.forecast);
+                } else {
+                    showError(data.error || 'Failed to load forecast');
+                }
+            } catch (error) {
+                showError(`Network error: ${error.message}`);
+            }
+        }
+
+        function displayForecast(location, forecast) {
+            const locationText = `[LOC] ${location.city}, ${location.country}`;
+            document.getElementById('locationDisplay').textContent = locationText;
+
+            let html = '<div class="success-msg">[OK] Forecast loaded successfully</div>';
+            html += '<div class="forecast-container">';
+
+            forecast.forEach((day, index) => {
+                const icon = WEATHER_ICONS[day.icon] || '[TEMP]';
+                const rainClass = day.rain_probability > 70 ? 'high' : 
+                                 day.rain_probability > 40 ? 'medium' : 'low';
+                const rainText = day.will_rain ? '[RAIN] Rain expected' : '[OK] No rain expected';
+                const rainIcon = day.will_rain ? '[RAIN]' : '[OK]';
+
+                html += `
+                    <div class="forecast-card">
+                        <div class="day-header">
+                            ${day.day}
+                            <div class="date-small">${new Date(day.date).toLocaleDateString()}</div>
+                        </div>
+                        
+                        <div class="weather-icon">${icon}</div>
+                        <div class="condition">${day.condition}</div>
+                        
+                        <div class="temps">
+                            <div class="temp">
+                                <div class="temp-label">Min</div>
+                                <div class="temp-value">${day.min_temp}°C</div>
+                            </div>
+                            <div class="temp">
+                                <div class="temp-label">Avg</div>
+                                <div class="temp-value">${day.avg_temp}°C</div>
+                            </div>
+                            <div class="temp">
+                                <div class="temp-label">Max</div>
+                                <div class="temp-value">${day.max_temp}°C</div>
+                            </div>
+                        </div>
+                        
+                        <div class="rain-section">
+                            <div class="rain-label">[AI] AI Rain Prediction</div>
+                            <div class="rain-probability">
+                                <div class="rain-bar">
+                                    <div class="rain-progress" style="width: ${day.rain_probability}%">
+                                        ${day.rain_probability > 20 ? day.rain_probability + '%' : ''}
+                                    </div>
+                                </div>
+                                <div class="rain-percentage">${day.rain_probability}%</div>
+                            </div>
+                            
+                            <div class="rain-indicator ${rainClass}">
+                                <span class="rain-icon">${rainIcon}</span>
+                                <span class="rain-text">${rainText}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-label">[H2O] Humidity</div>
+                                <div class="stat-value">${day.humidity}%</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">[CLD] Clouds</div>
+                                <div class="stat-value">${day.cloud_cover}%</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">[WIND] Wind</div>
+                                <div class="stat-value">${day.wind_speed} m/s</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">[DAY] Days Out</div>
+                                <div class="stat-value">+${index + 1}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        function showError(message) {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="error">
+                    [ERR] Error: ${message}
+                    <br><br>
+                    <small>Make sure the backend is running: python app.py</small>
+                </div>
+            `;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // INITIALIZATION
+        // ═══════════════════════════════════════════════════════════════
+        document.addEventListener('DOMContentLoaded', loadForecast);
+    </script>
+</body>
+</html>

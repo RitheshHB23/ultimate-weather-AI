@@ -1,0 +1,153 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                     ULTIMATE WEATHER AI                                  ║
+║                          QUICK START GUIDE                                 ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ WHAT IS THIS?
+
+A web application that shows a 4-day weather forecast with AI-powered rain
+predictions. It auto-detects your location, fetches real-time weather data,
+and predicts rain probability for each day.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ SETUP (One-time only)
+
+STEP 1: Get API Key (2 minutes)
+────────────────────────────────
+1. Go to: https://openweathermap.org/api
+2. Sign up for FREE
+3. Copy your API key from the dashboard
+
+STEP 2: Create .env File (1 minute)
+────────────────────────────────────
+1. Copy .env.example → .env
+2. Paste your API key:
+
+   OPENWEATHER_API_KEY=your_key_here
+
+STEP 3: Install Libraries (3 minutes)
+──────────────────────────────────────
+Open terminal in this folder and run:
+
+   pip install -r requirements.txt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ RUN THE APPLICATION
+
+WINDOWS:
+────────
+Just double-click: run.bat
+
+Or in PowerShell:
+   python app.py
+
+
+LINUX/MAC:
+──────────
+In terminal:
+   bash run.sh
+
+Or:
+   python3 app.py
+
+
+Then open your browser:
+    http://localhost:5000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ WHAT YOU'LL SEE
+
+The web dashboard shows:
+
+┌─────────────────────────────────────────────────────────────┐
+│  ULTIMATE WEATHER AI                                      │
+│ 4-Day Forecast with Rain Prediction                         │
+│  Your City, Country                                       │
+│                                                             │
+│ ┌──────────────────────────────────────────────────────┐   │
+│ │ TUESDAY                        WEDNESDAY             │   │
+│ │ [SUN] Sunny                       [RAIN] Rainy       │   │
+│ │ Min: 15C | Avg: 18C | Max: 22C                   │   │
+│ │ [WIND] Wind: 3.2 m/s | [H2O] Humidity: 72%                │   │
+│ │                                                      │   │
+│ │ [AI] Rain Prediction                                   │   │
+│ │ [═══════════════════════════════] 65%               │   │
+│ │ [WARN] Moderate rain chance                            │   │
+│ └──────────────────────────────────────────────────────┘   │
+│                                                             │
+│ ... and 2 more days                                        │
+│                                                             │
+│  [ REFRESH FORECAST]                                    │
+└─────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ RAIN PREDICTION GUIDE
+
+Green (0-30%)    →  Unlikely to rain
+Orange (30-70%)  →   Moderate chance
+Red (70-100%)    →  High chance
+
+The AI analyzes:
+• Humidity
+• Cloud coverage
+• Atmospheric pressure
+• Wind speed
+→ Predicts rain probability
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ TROUBLESHOOTING
+
+"Port 5000 is already in use"
+→ Close other applications using port 5000
+→ Or edit app.py line ~570: port=5001
+
+"Could not detect location"
+→ Check internet connection
+→ Use specific coordinates: http://localhost:5000/api/forecast?lat=X&lng=Y
+
+"API key error"
+→ Check .env file has correct key
+→ No extra spaces or quotes needed
+
+"ModuleNotFoundError"
+→ Run: pip install -r requirements.txt
+→ Restart the application
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ MORE OPTIONS
+
+CLI Version (Terminal only):
+────────────────────────────
+python weather_ai.py
+
+REST API (Integrate with other apps):
+──────────────────────────────────────
+GET /api/forecast
+GET /api/location
+GET /api/health
+
+See README.md for full documentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ QUICK TEST (Without changing anything)
+
+1. Make sure .env file has your API key
+2. Run: python app.py
+3. Wait for "Server running at http://localhost:5000"
+4. Open browser: http://localhost:5000
+5. You should see the 4-day forecast immediately!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ FULL DOCUMENTATION: See README.md
+
+Happy Weather Predicting!
